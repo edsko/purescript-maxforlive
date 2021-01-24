@@ -28,15 +28,16 @@ instance mkNewToggle :: MkNew Toggle where
 
 {-------------------------------------------------------------------------------
   `live.dial`
+
 -------------------------------------------------------------------------------}
 
 -- | `live.dial`
 -- |
 -- | https://docs.cycling74.com/max8/refpages/live.dial
---
--- Implemention note: to figure out the parameters, the "copy and paste"
--- trick from https://cycling74.com/forums/what-is-this-message-_parameter_-about-max-for-live-ui-objects-2
--- seems to work quite well.
+-- |
+-- | These should probably not be created dynamically when using Max for Live
+-- | (rather than standalone Max). See
+-- | https://cycling74.com/forums/what-is-this-message-_parameter_-about-max-for-live-ui-objects-2
 data LiveDial = LiveDial {
       liveDialType :: LiveDialType
     }
