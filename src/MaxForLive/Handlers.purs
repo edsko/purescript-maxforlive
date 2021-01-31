@@ -3,7 +3,7 @@
 -- | https://docs.cycling74.com/max8/vignettes/jsbasic
 module MaxForLive.Handlers (
      -- | Max message handlers
-     registerHandler
+     setHandler
      -- | FFI boundary
    , class InvokeHandler
    , invokeHandler
@@ -14,16 +14,16 @@ import Prelude
 import Effect (Effect)
 import Effect.Uncurried (
     EffectFn1
-  , EffectFn2
+  , EffectFn3
   , mkEffectFn1
-  , runEffectFn2
+  , runEffectFn3
   )
 
 import MaxForLive.Arguments (Arguments, getArg)
 import MaxForLive.Conversions (class FromMax)
 
-foreign import registerHandlerImpl ::
-     EffectFn2 String (EffectFn1 Arguments Unit) Unit
+foreign import setHandlerImpl ::
+     EffectFn3 Int String (EffectFn1 Arguments Unit) Unit
 
 {-------------------------------------------------------------------------------
   Max message handlers
@@ -34,15 +34,22 @@ foreign import registerHandlerImpl ::
 -- | For example, to respond to a bang:
 -- |
 -- | ```purescript
--- | registerHandler "bang" $ postLn "BANG!"
+-- | setHandler { inlet: 0, msg: "bang", handler: postLn "BANG!" }
 -- | ```
 -- |
 -- | Use `"msg_int"` and co as `message` to handle values as messages, see
 -- | https://docs.cycling74.com/max8/vignettes/jsbasic#Special_Function_Names
-registerHandler :: forall a. InvokeHandler a => String -> a -> Effect Unit
-registerHandler msg h =
-    runEffectFn2 registerHandlerImpl msg $
-      mkEffectFn1 (invokeHandler 0 h)
+setHandler ::
+     forall a.
+     InvokeHandler a
+  => { inlet   :: Int
+     , msg     :: String
+     , handler :: a
+     }
+  -> Effect Unit
+setHandler {inlet, msg, handler} =
+    runEffectFn3 setHandlerImpl inlet msg $
+      mkEffectFn1 (invokeHandler 0 handler)
 
 {-------------------------------------------------------------------------------
   FFI: Functions of arbitrary arguments

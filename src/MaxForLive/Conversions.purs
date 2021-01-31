@@ -28,10 +28,14 @@ class ToMax a where
 -------------------------------------------------------------------------------}
 
 foreign import fromMaxIntImpl    :: MaxValue -> Int
+foreign import fromMaxNumberImpl :: MaxValue -> Number
 foreign import fromMaxStringImpl :: MaxValue -> String
 
 instance fromMaxInt :: FromMax Int where
   fromMax = fromMaxIntImpl
+
+instance fromMaxNumber :: FromMax Number where
+  fromMax = fromMaxNumberImpl
 
 instance fromMaxString :: FromMax String where
   fromMax = fromMaxStringImpl
@@ -44,4 +48,7 @@ instance toMaxInt :: ToMax Int where
   toMax = unsafeCoerce
 
 instance toMaxString :: ToMax String where
+  toMax = unsafeCoerce
+
+instance toMaxArrayInt :: ToMax (Array Int) where
   toMax = unsafeCoerce

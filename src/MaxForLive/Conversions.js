@@ -11,6 +11,19 @@ exports.fromMaxIntImpl = function(x) {
   }
 }
 
+exports.fromMaxNumberImpl = function(x) {
+  if(typeof(x) === 'number') {
+    return x;
+  } else {
+    throw ( "fromMaxNumberImpl: Argument "
+          + x
+          + " has unexpected type "
+          + typeof(x)
+          + " (expected Number)\n"
+          );
+  }
+}
+
 exports.fromMaxStringImpl = function(x) {
   if(typeof(x) === 'string') {
     return x;
