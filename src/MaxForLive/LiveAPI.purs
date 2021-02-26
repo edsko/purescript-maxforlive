@@ -7,6 +7,7 @@ module MaxForLive.LiveAPI (
   , Song
   , Track
   , ControlSurface
+  , Element
     -- | Views
   , View
   , class HasView
@@ -27,17 +28,27 @@ module MaxForLive.LiveAPI (
   , controlSurface
     -- | LiveAPI object proper
   , LiveAPI
-  , new
+  , withPath
+  , withId
   , Id
   , id
   , objectType
   , sameId
   , unquotedPath
   , getCount
-  , grabControl
-  , releaseControl
     -- | Type specializations
   , countControlSurfaces
+    -- | Controls
+  , kind Control
+  , ButtonMatrix
+  , ControlName -- opaque
+  , buttonMatrix
+  , grabControl
+  , releaseControl
+  , getControlId
+  , getControl
+    -- | Specific controls
+  , setButtonMatrixColor
   ) where
 
 import Prelude
@@ -81,6 +92,9 @@ foreign import data Clip :: LOM
 -- |
 -- | https://docs.cycling74.com/max8/vignettes/live_object_model#ControlSurface
 foreign import data ControlSurface :: LOM
+
+-- | Control surface elements
+foreign import data Element :: Control -> LOM
 
 -- | View on an object
 foreign import data View :: LOM -> LOM
@@ -198,8 +212,11 @@ controlSurface n = Path ("control_surfaces " <> show n)
 -- | See https://docs.cycling74.com/max8/vignettes/live_object_model
 foreign import data LiveAPI :: LOM -> Type
 
--- | Construct `LiveAPI` object
-foreign import new :: forall r a. Path r a -> Effect (LiveAPI a)
+-- | Construct `LiveAPI` object from a `Path`
+foreign import withPath :: forall r a. Path r a -> Effect (LiveAPI a)
+
+-- | Construct `LiveAPI` object from previously discovered `Id`
+foreign import withId :: forall a. Id a -> Effect (LiveAPI a)
 
 -- | Object ID
 -- |
@@ -227,6 +244,14 @@ foreign import sameIdImpl :: forall a b. Fn2 (Id a) (Id b) Boolean
 sameId :: forall a b. Id a -> Id b -> Boolean
 sameId = runFn2 sameIdImpl
 
+-- | Show ID
+-- |
+-- | Low-level function (used for the 'Show' instance)
+foreign import idToString :: forall a. Id a -> String
+
+instance showId :: Show (Id a) where
+  show = idToString
+
 -- | The path to the Live object referred to by the LiveAPI object
 -- |
 -- | These paths will be _stable_ ("absolute"), and may therefore be
@@ -242,19 +267,69 @@ foreign import unquotedPath :: forall a. LiveAPI a -> Path Absolute a
 -- | https://docs.cycling74.com/max8/vignettes/jsliveapi#getcount
 foreign import getCount :: forall a. EffectFn2 String (LiveAPI a) Int
 
--- | Grab control (by name)
--- |
--- | https://docs.cycling74.com/max8/vignettes/live_object_model#ControlSurface
-foreign import grabControl :: LiveAPI ControlSurface -> String -> Effect Unit
-
--- | Release control (by name)
--- |
--- | https://docs.cycling74.com/max8/vignettes/live_object_model#ControlSurface
-foreign import releaseControl :: LiveAPI ControlSurface -> String -> Effect Unit
-
 {-------------------------------------------------------------------------------
   Type specializations
 -------------------------------------------------------------------------------}
 
 countControlSurfaces :: LiveAPI Application -> Effect Int
 countControlSurfaces = runEffectFn2 getCount "control_surfaces"
+
+{-------------------------------------------------------------------------------
+  Controls
+
+  The various functions we can call on `ControlSurface` don't have HTML
+  anchors associated with them; instead, refer to
+
+  https://docs.cycling74.com/max8/vignettes/live_object_model#ControlSurface
+
+  The control elements don't seem to be documented at all; some are mentioned
+  at the beginning of
+
+  https://docs.cycling74.com/max8/vignettes/live_object_model
+-------------------------------------------------------------------------------}
+
+foreign import kind Control
+foreign import data ButtonMatrix :: Control
+
+-- | Control names
+--
+-- We use the phantom parameter in the same way that we do for 'Path', but
+-- controls (aka control elements) are not accessed through paths.
+newtype ControlName (c :: Control) = ControlName String
+
+buttonMatrix :: ControlName ButtonMatrix
+buttonMatrix = ControlName "Button_Matrix"
+
+-- | Grab control
+foreign import grabControl :: forall c.
+     LiveAPI ControlSurface
+  -> ControlName c
+  -> Effect Unit
+
+-- | Release control
+foreign import releaseControl :: forall c.
+     LiveAPI ControlSurface
+  -> ControlName c
+  -> Effect Unit
+
+-- | Get ID of the given control
+foreign import getControlId :: forall e.
+     LiveAPI ControlSurface
+  -> ControlName e
+  -> Effect (Id (Element e))
+
+-- | Get control element
+getControl :: forall e.
+     LiveAPI ControlSurface
+  -> ControlName e
+  -> Effect (LiveAPI (Element e))
+getControl cs control = withId =<< getControlId cs control
+
+{-------------------------------------------------------------------------------
+  Specific controls
+-------------------------------------------------------------------------------}
+
+foreign import setButtonMatrixColor ::
+     LiveAPI (Element ButtonMatrix)
+  -> { col :: Int, row :: Int, color :: Int }
+  -> Effect Unit

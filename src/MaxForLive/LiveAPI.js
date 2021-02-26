@@ -1,6 +1,12 @@
-exports.new = function(path) {
+exports.withPath = function(path) {
   return function() {
     return new LiveAPI(null, path);
+  }
+}
+
+exports.withId = function(id) {
+  return function() {
+    return new LiveAPI(null, id);
   }
 }
 
@@ -14,6 +20,10 @@ exports.objectType = function(obj) {
 
 exports.sameIdImpl = function(id1, id2) {
   return id1 === id2;
+}
+
+exports.idToString = function(id) {
+  return String(id);
 }
 
 exports.unquotedPath = function(obj) {
@@ -36,6 +46,22 @@ exports.releaseControl = function(liveAPI) {
   return function(control) {
     return function() {
       liveAPI.call("release_control", control);
+    }
+  }
+}
+
+exports.getControlId = function(liveAPI) {
+  return function(control) {
+    return function() {
+      return liveAPI.call("get_control", control);
+    }
+  }
+}
+
+exports.setButtonMatrixColor = function(liveAPI) {
+  return function(args) {
+    return function() {
+      liveAPI.call("send_value", args.col, args.row, args.color);
     }
   }
 }
