@@ -23,3 +23,19 @@ exports.unquotedPath = function(obj) {
 exports.getCount = function(path, liveAPI) {
   return liveAPI.getcount(path);
 }
+
+exports.grabControl = function(liveAPI) {
+  return function(control) {
+    return function() {
+      liveAPI.call("grab_control", control);
+    }
+  }
+}
+
+exports.releaseControl = function(liveAPI) {
+  return function(control) {
+    return function() {
+      liveAPI.call("release_control", control);
+    }
+  }
+}

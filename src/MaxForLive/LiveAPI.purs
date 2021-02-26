@@ -34,6 +34,8 @@ module MaxForLive.LiveAPI (
   , sameId
   , unquotedPath
   , getCount
+  , grabControl
+  , releaseControl
     -- | Type specializations
   , countControlSurfaces
   ) where
@@ -239,6 +241,16 @@ foreign import unquotedPath :: forall a. LiveAPI a -> Path Absolute a
 -- |
 -- | https://docs.cycling74.com/max8/vignettes/jsliveapi#getcount
 foreign import getCount :: forall a. EffectFn2 String (LiveAPI a) Int
+
+-- | Grab control (by name)
+-- |
+-- | https://docs.cycling74.com/max8/vignettes/live_object_model#ControlSurface
+foreign import grabControl :: LiveAPI ControlSurface -> String -> Effect Unit
+
+-- | Release control (by name)
+-- |
+-- | https://docs.cycling74.com/max8/vignettes/live_object_model#ControlSurface
+foreign import releaseControl :: LiveAPI ControlSurface -> String -> Effect Unit
 
 {-------------------------------------------------------------------------------
   Type specializations
