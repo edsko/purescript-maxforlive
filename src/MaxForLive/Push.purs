@@ -1,26 +1,30 @@
 module MaxForLive.Push (
     Push(..)
   , Button
-  , Colour
+  , Color
   , new
   ) where
 
 import Prelude
-import Data.Maybe (Maybe(..))
+import Data.FoldableWithIndex (forWithIndex_)
 import Data.List ((..))
+import Data.Map (Map)
+import Data.Map as Map
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
+import Effect.Ref as Ref
 
-import MaxForLive.LiveAPI (LiveAPI, ControlSurface)
+import MaxForLive.LiveAPI (LiveAPI, ControlSurface, Element, ButtonMatrix)
 import MaxForLive.LiveAPI as LiveAPI
 import MaxForLive.Util (firstJustM)
 
 type Button = { col :: Int, row :: Int }
-type Colour = Int
+type Color  = Int
 
 data Push = Push {
       grabButtonMatrix     :: Effect Unit
     , releaseButtonMatrix  :: Effect Unit
-    , setButtonMatrixColor :: Button -> Colour -> Effect Unit
+    , setButtonMatrixColor :: Button -> Color -> Effect Unit
     }
 
 new :: Effect (Maybe Push)
@@ -39,18 +43,24 @@ new = do
 mkPush :: LiveAPI ControlSurface -> Effect Push
 mkPush push = do
     buttonMatrix <- LiveAPI.getControl push LiveAPI.buttonMatrix
+    colors <- Ref.new Map.empty
     pure $ Push {
-        grabButtonMatrix:
+        grabButtonMatrix: do
           LiveAPI.grabControl push LiveAPI.buttonMatrix
+          refreshColors buttonMatrix =<< Ref.read colors
       , releaseButtonMatrix:
           LiveAPI.releaseControl push LiveAPI.buttonMatrix
-      , setButtonMatrixColor: \button color ->
-          LiveAPI.setButtonMatrixColor buttonMatrix {
-              col: button.col
-            , row: button.row
-            , color: color
-            }
+      , setButtonMatrixColor: \button color -> do
+          Ref.modify_ (Map.insert button color) colors
+          LiveAPI.setButtonMatrixColor buttonMatrix button color
       }
+
+refreshColors ::
+      LiveAPI (Element ButtonMatrix)
+   -> Map Button Color
+   -> Effect Unit
+refreshColors buttonMatrix colors =
+    forWithIndex_ colors $ LiveAPI.setButtonMatrixColor buttonMatrix
 
 findPush :: Effect (Maybe (LiveAPI ControlSurface))
 findPush = do

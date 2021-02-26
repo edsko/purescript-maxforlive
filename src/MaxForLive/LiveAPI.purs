@@ -331,5 +331,6 @@ getControl cs control = withId =<< getControlId cs control
 
 foreign import setButtonMatrixColor ::
      LiveAPI (Element ButtonMatrix)
-  -> { col :: Int, row :: Int, color :: Int }
+  -> { col :: Int, row :: Int }
+  -> Int
   -> Effect Unit

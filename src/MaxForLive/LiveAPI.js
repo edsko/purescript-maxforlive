@@ -59,9 +59,11 @@ exports.getControlId = function(liveAPI) {
 }
 
 exports.setButtonMatrixColor = function(liveAPI) {
-  return function(args) {
-    return function() {
-      liveAPI.call("send_value", args.col, args.row, args.color);
+  return function(button) {
+    return function(color) {
+      return function() {
+        liveAPI.call("send_value", button.col, button.row, color);
+      }
     }
   }
 }
