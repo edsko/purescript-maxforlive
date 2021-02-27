@@ -6,6 +6,7 @@ module MaxForLive.Conversions (
   , toMax
   ) where
 
+import Prelude
 import Unsafe.Coerce (unsafeCoerce)
 
 {-------------------------------------------------------------------------------
@@ -44,11 +45,14 @@ instance fromMaxString :: FromMax String where
   `ToMax` instances
 -------------------------------------------------------------------------------}
 
+instance toMaxMaxValue :: ToMax MaxValue where
+  toMax = identity
+
 instance toMaxInt :: ToMax Int where
   toMax = unsafeCoerce
 
 instance toMaxString :: ToMax String where
   toMax = unsafeCoerce
 
-instance toMaxArrayInt :: ToMax (Array Int) where
-  toMax = unsafeCoerce
+instance toMaxArray :: ToMax a => ToMax (Array a) where
+  toMax = unsafeCoerce <<< map toMax
