@@ -57,6 +57,8 @@ import Data.Function.Uncurried (Fn2, runFn2)
 import Effect (Effect)
 import Effect.Uncurried (EffectFn2, runEffectFn2)
 
+import MaxForLive.Conversions (MaxValue, class ToMax)
+
 {-------------------------------------------------------------------------------
   Types of objects
 -------------------------------------------------------------------------------}
@@ -238,7 +240,7 @@ foreign import objectType :: forall a. LiveAPI a -> String
 -- | See `compareId`
 foreign import sameIdImpl :: forall a b. Fn2 (Id a) (Id b) Boolean
 
--- | Simplified form of 'compareId'
+-- | Simplified form of `compareId`
 -- |
 -- | See also `compareId`
 sameId :: forall a b. Id a -> Id b -> Boolean
@@ -246,11 +248,24 @@ sameId = runFn2 sameIdImpl
 
 -- | Show ID
 -- |
--- | Low-level function (used for the 'Show' instance)
+-- | Intended for use in the `Show` instance.
 foreign import idToString :: forall a. Id a -> String
+
+-- | ID to Max value (to send to an outlet)
+-- |
+-- | Intended for use in the `ToMax` instance.
+-- |
+-- | NOTE: We cannot simply call `unsafeCoerce`, because Max is not very
+-- | consistent in how it represents IDs: sometimes it represents them as
+-- | an array `["id", id]`, and sometimes simply as the raw ID `id`. When
+-- | we send an ID to an outlet, however, they must have the former shape.
+foreign import idToMax :: forall a. Id a -> MaxValue
 
 instance showId :: Show (Id a) where
   show = idToString
+
+instance toMaxId :: ToMax (Id a) where
+  toMax = idToMax
 
 -- | The path to the Live object referred to by the LiveAPI object
 -- |

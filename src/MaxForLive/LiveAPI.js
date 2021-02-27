@@ -26,6 +26,18 @@ exports.idToString = function(id) {
   return String(id);
 }
 
+exports.idToMax = function(id) {
+  if(Array.isArray(id) && id[0] === "id") {
+    return id;
+  } else if(typeof(id) === 'number') {
+    return ["id", id];
+  } else if(typeof(id) === 'string' && !isNaN(id)) {
+    return ["id", parseInt(id)];
+  } else {
+    error("idToMax: invalid ID ", id, "\n");
+  }
+}
+
 exports.unquotedPath = function(obj) {
   return obj.unquotedpath;
 }

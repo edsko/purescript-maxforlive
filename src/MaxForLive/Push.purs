@@ -14,7 +14,13 @@ import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Ref as Ref
 
-import MaxForLive.LiveAPI (LiveAPI, ControlSurface, Element, ButtonMatrix)
+import MaxForLive.LiveAPI (
+    LiveAPI
+  , ButtonMatrix
+  , ControlSurface
+  , Element
+  , Id
+  )
 import MaxForLive.LiveAPI as LiveAPI
 import MaxForLive.Util (firstJustM)
 
@@ -25,6 +31,7 @@ data Push = Push {
       grabButtonMatrix     :: Effect Unit
     , releaseButtonMatrix  :: Effect Unit
     , setButtonMatrixColor :: Button -> Color -> Effect Unit
+    , buttonMatrixId       :: Id (Element ButtonMatrix)
     }
 
 new :: Effect (Maybe Push)
@@ -53,6 +60,8 @@ mkPush push = do
       , setButtonMatrixColor: \button color -> do
           Ref.modify_ (Map.insert button color) colors
           LiveAPI.setButtonMatrixColor buttonMatrix button color
+      , buttonMatrixId:
+          LiveAPI.id buttonMatrix
       }
 
 refreshColors ::
