@@ -4,6 +4,9 @@ exports.mkMaxMessage = function(msg, payload) {
   if(Array.isArray(payload)) {
     return [msg].concat(payload);
   } else {
+    post("mkMaxMessage", payload, typeof(payload), "\n");
     return [msg, payload];
   }
 }
+
+exports.bang = "bang"

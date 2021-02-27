@@ -9,6 +9,10 @@ import Prelude
 import Data.Maybe (Maybe(..))
 import Data.List (List(..), (:))
 
+{-------------------------------------------------------------------------------
+  Monadic utilities
+-------------------------------------------------------------------------------}
+
 firstJustM ::
      forall m a b. Monad m
   => List a -> (a -> m (Maybe b)) -> m (Maybe b)
