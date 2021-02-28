@@ -4,6 +4,22 @@ exports.withPath = function(path) {
   }
 }
 
+exports.deviceTrack = function(path) {
+  return function() {
+    var parentObj  = null;
+    var parentPath = path;
+
+    var i = 0;
+
+    do {
+      parentPath = parentPath + " canonical_parent";
+      parentObj  = new LiveAPI(null, parentPath);
+    } while(parentObj.type !== 'Track' && parentObj.id != 0);
+
+    return parentObj;
+  }
+}
+
 exports.withId = function(id) {
   return function() {
     return new LiveAPI(null, id);

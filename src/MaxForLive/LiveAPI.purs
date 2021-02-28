@@ -12,19 +12,15 @@ module MaxForLive.LiveAPI (
   , View
   , class HasView
   , view
-    -- | Parents
-  , class HasParent
     -- | Paths
   , kind Root
   , Absolute
   , Relative
   , Path -- opaque
-  , canonicalParent
   , liveApp
   , liveSet
   , selectedTrack
   , thisDevice
-  , thisTrack
   , controlSurface
     -- | LiveAPI object proper
   , LiveAPI
@@ -36,6 +32,8 @@ module MaxForLive.LiveAPI (
   , sameId
   , unquotedPath
   , getCount
+    -- | Parents
+  , deviceTrack
     -- | Type specializations
   , countControlSurfaces
     -- | Controls
@@ -52,10 +50,10 @@ module MaxForLive.LiveAPI (
   ) where
 
 import Prelude
-
 import Data.Function.Uncurried (Fn2, runFn2)
 import Effect (Effect)
 import Effect.Uncurried (EffectFn2, runEffectFn2)
+import Unsafe.Coerce (unsafeCoerce)
 
 import MaxForLive.Conversions (MaxValue, class ToMax)
 
@@ -100,17 +98,6 @@ foreign import data Element :: Control -> LOM
 
 -- | View on an object
 foreign import data View :: LOM -> LOM
-
-{-------------------------------------------------------------------------------
-  Parents
--------------------------------------------------------------------------------}
-
--- | Parents
--- |
--- | This essentially encodes a type family, mapping children to their parents.
-class HasParent (c :: LOM) (p :: LOM) | c -> p
-
-instance hasParentDevice :: HasParent Device Track
 
 {-------------------------------------------------------------------------------
   Views
@@ -160,6 +147,12 @@ foreign import data Absolute :: Root
 -- | with the combinators provided in this module.
 newtype Path (root :: Root) (a :: LOM) = Path String
 
+instance showPath :: Show (Path r a) where
+  show (Path p) = p
+
+instance toMaxPath :: ToMax (Path r a) where
+  toMax = unsafeCoerce
+
 -- | Root path: Relative path to the Ableton application
 -- |
 -- | https://docs.cycling74.com/max8/vignettes/live_object_model#Application
@@ -177,18 +170,6 @@ thisDevice = Path "this_device"
 -- | https://docs.cycling74.com/max8/vignettes/live_object_model#Song
 liveSet :: Path Relative Song
 liveSet = Path "live_set"
-
--- | Our own track object
--- |
--- | https://docs.cycling74.com/max8/vignettes/live_api_overview#Canonical_Parent
-thisTrack :: Path Relative Track
-thisTrack = canonicalParent thisDevice
-
--- | Canonical parent
--- |
--- | https://docs.cycling74.com/max8/vignettes/live_api_overview#Canonical_Parent
-canonicalParent :: forall r c p. HasParent c p => Path r c -> Path Relative p
-canonicalParent (Path p) = Path (p <> " canonical_parent")
 
 -- | Selected track
 -- |
@@ -281,6 +262,20 @@ foreign import unquotedPath :: forall a. LiveAPI a -> Path Absolute a
 -- |
 -- | https://docs.cycling74.com/max8/vignettes/jsliveapi#getcount
 foreign import getCount :: forall a. EffectFn2 String (LiveAPI a) Int
+
+{-------------------------------------------------------------------------------
+  Parents
+
+  We can use `canonical_parent` to get the canonical parent of any object
+  (https://docs.cycling74.com/max8/vignettes/live_api_overview#Canonical_Parent).
+  Despite the name, however, this isn't necessary "canonical"; for instance,
+  the parent of a device might be a track, but could also be a chain (if the
+  device is grouped). We therefore provide specialized functions here that
+  take this into account.
+-------------------------------------------------------------------------------}
+
+-- | Track this device sits on
+foreign import deviceTrack :: forall r. Path r Device -> Effect (LiveAPI Track)
 
 {-------------------------------------------------------------------------------
   Type specializations

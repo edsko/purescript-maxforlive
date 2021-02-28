@@ -18,9 +18,9 @@ var messageHandlers = {};
  * <code>messageHandlers</code>, and we will read it here.
  */
 function anything() {
-  if(typeof(messageHandlers[inlet][messagename]) === 'function') {
+  if(messageHandlers[inlet] !== undefined && typeof(messageHandlers[inlet][messagename]) === 'function') {
     messageHandlers[inlet][messagename](arguments);
   } else {
-    throw ("anything: Unexpected message " + messagename + "\n");
+    throw ("anything: Unexpected message " + messagename + " on inlet " + inlet + "\n");
   }
 }
