@@ -58,3 +58,19 @@ exports.jsArgImpl = function(i) {
           );
   }
 }
+
+exports.setInletAssist = function(inlet) {
+  return function(assist) {
+    return function() {
+      setinletassist(inlet, assist);
+    }
+  }
+}
+
+exports.setOutletAssist = function(inlet) {
+  return function(assist) {
+    return function() {
+      setoutletassist(inlet, assist);
+    }
+  }
+}
