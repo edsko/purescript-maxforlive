@@ -27,31 +27,20 @@ exports.withId = function(id) {
 }
 
 exports.id = function(obj) {
-  return obj.id;
+  var id = obj.id;
+
+  if(typeof(id) === 'string') {
+    // For some reason, IDs are returned as strings 🤦‍♂️
+    return parseInt(id);
+  } else if(typeof(id) === 'number') {
+    return id;
+  } else {
+    error("id: unexpected ID", id, "of type", typeof(id), "\n");
+  }
 }
 
 exports.objectType = function(obj) {
   return obj.type;
-}
-
-exports.sameIdImpl = function(id1, id2) {
-  return id1 === id2;
-}
-
-exports.idToString = function(id) {
-  return String(id);
-}
-
-exports.idToMax = function(id) {
-  if(Array.isArray(id) && id[0] === "id") {
-    return id;
-  } else if(typeof(id) === 'number') {
-    return ["id", id];
-  } else if(typeof(id) === 'string' && !isNaN(id)) {
-    return ["id", parseInt(id)];
-  } else {
-    error("idToMax: invalid ID ", id, "\n");
-  }
 }
 
 exports.unquotedPath = function(obj) {
@@ -60,6 +49,14 @@ exports.unquotedPath = function(obj) {
 
 exports.getCount = function(path, liveAPI) {
   return liveAPI.getcount(path);
+}
+
+exports.idFromMax = function(id) {
+  if(typeof(id) === 'number') {
+    return id;
+  } else {
+    error("idFromMax: unexpected ID", id, "of type", typeof(id), "\n");
+  }
 }
 
 exports.grabControl = function(liveAPI) {

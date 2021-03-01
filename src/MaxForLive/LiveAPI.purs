@@ -50,12 +50,12 @@ module MaxForLive.LiveAPI (
   ) where
 
 import Prelude
-import Data.Function.Uncurried (Fn2, runFn2)
 import Effect (Effect)
 import Effect.Uncurried (EffectFn2, runEffectFn2)
 import Unsafe.Coerce (unsafeCoerce)
 
-import MaxForLive.Conversions (MaxValue, class ToMax)
+import MaxForLive.Conversions (MaxValue, class ToMax, class FromMax, toMax)
+import MaxForLive.Message (Message(..))
 
 {-------------------------------------------------------------------------------
   Types of objects
@@ -204,7 +204,13 @@ foreign import withId :: forall a. Id a -> Effect (LiveAPI a)
 -- | Object ID
 -- |
 -- | https://docs.cycling74.com/max8/vignettes/jsliveapi#id
-foreign import data Id :: LOM -> Type
+-- |
+-- | Max for Live sometimes represents IDs simply as numbers (for example, that
+-- | is what `id` returns on a `LiveAPI` object, and sometimes as a list
+-- | `["id", id]` (for example, this is the format Max messages should be in).
+-- | We represent it /always/ as a single number, doing conversions back and
+-- | forth as required.
+newtype Id (a :: LOM) = Id Int
 
 -- | Object ID
 -- |
@@ -218,35 +224,36 @@ foreign import objectType :: forall a. LiveAPI a -> String
 
 -- | Compare two IDs
 -- |
--- | See `compareId`
-foreign import sameIdImpl :: forall a b. Fn2 (Id a) (Id b) Boolean
-
--- | Simplified form of `compareId`
--- |
--- | See also `compareId`
+-- | TODO: We may wish to define a more strongly typed version of this,
+-- | returning evidence that `a` and `b` must be equal if the IDs match.
 sameId :: forall a b. Id a -> Id b -> Boolean
-sameId = runFn2 sameIdImpl
+sameId (Id i) (Id i') = i == i'
 
--- | Show ID
--- |
--- | Intended for use in the `Show` instance.
-foreign import idToString :: forall a. Id a -> String
+-- | More restricted form of 'sameId' that insists the object types must match
+instance eqId :: Eq (Id a) where
+  eq = sameId
+
+instance showId :: Show (Id a) where
+  show (Id i) = show i
 
 -- | ID to Max value (to send to an outlet)
 -- |
 -- | Intended for use in the `ToMax` instance.
 -- |
--- | NOTE: We cannot simply call `unsafeCoerce`, because Max is not very
--- | consistent in how it represents IDs: sometimes it represents them as
--- | an array `["id", id]`, and sometimes simply as the raw ID `id`. When
--- | we send an ID to an outlet, however, they must have the former shape.
-foreign import idToMax :: forall a. Id a -> MaxValue
-
-instance showId :: Show (Id a) where
-  show = idToString
-
+-- | This will turn the ID into a list `["id", id]`, which is the format
+-- | expected in Max messages.
 instance toMaxId :: ToMax (Id a) where
-  toMax = idToMax
+  toMax (Id i) = toMax $ Message { messageName: "id", messagePayload: i }
+
+-- | Low-level function for use in the `FromMax` instance
+foreign import idFromMax :: forall a. MaxValue -> Id a
+
+-- | Max value to ID
+-- |
+-- | NOTE: We have no way of verifying the type of the identifier, so this is
+-- | polymorphic in `a`. Use responsibly.
+instance fromMaxId :: FromMax (Id a) where
+  fromMax = idFromMax
 
 -- | The path to the Live object referred to by the LiveAPI object
 -- |
