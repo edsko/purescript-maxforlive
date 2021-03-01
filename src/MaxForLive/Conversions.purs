@@ -41,6 +41,13 @@ instance fromMaxNumber :: FromMax Number where
 instance fromMaxString :: FromMax String where
   fromMax = fromMaxStringImpl
 
+instance fromMaxBoolean :: FromMax Boolean where
+  fromMax = conv <<< fromMax
+    where
+      conv :: Int -> Boolean
+      conv 0 = false
+      conv _ = true
+
 {-------------------------------------------------------------------------------
   `ToMax` instances
 -------------------------------------------------------------------------------}
