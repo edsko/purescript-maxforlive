@@ -58,6 +58,13 @@ instance toMaxMaxValue :: ToMax MaxValue where
 instance toMaxInt :: ToMax Int where
   toMax = unsafeCoerce
 
+instance toMaxBoolean :: ToMax Boolean where
+  toMax = toMax <<< conv
+    where
+      conv :: Boolean -> Int
+      conv false = 0
+      conv true  = 1
+
 instance toMaxString :: ToMax String where
   toMax = unsafeCoerce
 
