@@ -42,8 +42,22 @@ grabButtonMatrix ref = State.withButtonMatrix ref $ \push matrix -> do
     refreshColors matrix =<< (_.colors) <$> Ref.read ref
 
 releaseButtonMatrix :: Ref PushState -> Effect Unit
-releaseButtonMatrix ref = State.withPush ref $ \push ->
-    LiveAPI.releaseControl push LiveAPI.buttonMatrix
+releaseButtonMatrix ref = do
+    -- Don't use `withPush`: we don't want to _acquire_ the Push just to
+    -- release it.
+    mPush <- (_.push) <$> Ref.read ref
+    case mPush of
+      Nothing ->
+        -- If the ID of the Push is not known, we can't possibly have
+        -- control over it. Ignore this call.
+        pure unit
+      Just push -> do
+        LiveAPI.releaseControl push LiveAPI.buttonMatrix
+
+        -- When we release, also forget the ID of the Push. This way, if the
+        -- release was in response to the device being re-initialized, we'll
+        -- correctly establish new IDs when we grab the Push again.
+        Ref.modify_ (_ { push = Nothing, buttonMatrix = Nothing }) ref
 
 -- | Set color of a button in the button matrix
 -- |
