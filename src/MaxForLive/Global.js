@@ -74,3 +74,9 @@ exports.setOutletAssist = function(inlet) {
     }
   }
 }
+
+exports.setAutowatch = function(x) {
+  return function() {
+    autowatch = x;
+  }
+}

@@ -12,6 +12,7 @@ module MaxForLive.Global (
   , jsArg
   , setInletAssist
   , setOutletAssist
+  , setAutowatch
     -- | `jsthis` Methods
   , outlet
   ) where
@@ -84,6 +85,11 @@ foreign import setInletAssist :: Int -> String -> Effect Unit
 -- |
 -- | https://docs.cycling74.com/max8/vignettes/jsglobal#setoutletassist
 foreign import setOutletAssist :: Int -> String -> Effect Unit
+
+-- | Set autowatch
+-- |
+-- | https://docs.cycling74.com/max8/vignettes/jsglobal#autowatch
+foreign import setAutowatch :: Int -> Effect Unit
 
 {-------------------------------------------------------------------------------
   `jsthis` Methods

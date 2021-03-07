@@ -37,9 +37,10 @@ new = do
 -------------------------------------------------------------------------------}
 
 grabButtonMatrix :: Ref PushState -> Effect Unit
-grabButtonMatrix ref = State.withButtonMatrix ref $ \push matrix -> do
-    LiveAPI.grabControl push LiveAPI.buttonMatrix
-    refreshColors matrix =<< (_.colors) <$> Ref.read ref
+grabButtonMatrix ref = do
+    State.withButtonMatrix ref $ \push matrix -> do
+      LiveAPI.grabControl push LiveAPI.buttonMatrix
+      refreshColors matrix =<< (_.colors) <$> Ref.read ref
 
 releaseButtonMatrix :: Ref PushState -> Effect Unit
 releaseButtonMatrix ref = do
@@ -47,7 +48,7 @@ releaseButtonMatrix ref = do
     -- release it.
     mPush <- (_.push) <$> Ref.read ref
     case mPush of
-      Nothing ->
+      Nothing -> do
         -- If the ID of the Push is not known, we can't possibly have
         -- control over it. Ignore this call.
         pure unit
@@ -88,5 +89,5 @@ refreshColors ::
       LiveAPI (Element ButtonMatrix)
    -> Map Button Color
    -> Effect Unit
-refreshColors buttonMatrix colors =
+refreshColors buttonMatrix colors = do
     forWithIndex_ colors $ LiveAPI.setButtonMatrixColor buttonMatrix

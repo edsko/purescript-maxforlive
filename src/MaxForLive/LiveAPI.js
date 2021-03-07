@@ -97,7 +97,11 @@ exports.setButtonMatrixColor = function(liveAPI) {
   return function(button) {
     return function(color) {
       return function() {
-        liveAPI.call("send_value", button.col, button.row, color);
+        if(liveAPI.type === "ButtonMatrixElement") {
+          liveAPI.call("send_value", button.col, button.row, color);
+        } else {
+          error("setButtonMatrixColor: unexpected type", liveAPI.type, "\n");
+        }
       }
     }
   }
