@@ -4,19 +4,29 @@ exports.withPath = function(path) {
   }
 }
 
-exports.deviceTrack = function(path) {
-  return function() {
-    var parentObj  = null;
-    var parentPath = path;
+exports.parentOfType = function(just, nothing, parentType, path) {
+  var parentObj  = null;
+  var parentPath = path;
 
-    var i = 0;
+  var i = 0;
 
-    do {
-      parentPath = parentPath + " canonical_parent";
-      parentObj  = new LiveAPI(null, parentPath);
-    } while(parentObj.type !== 'Track' && parentObj.id != 0);
+  // We're a bit paranoid here; for justification, see
+  // https://cycling74.com/forums/livemax-hang-live-at-100-cpu-when-saving-patch
+  var loopProtection = 20;
 
-    return parentObj;
+  do {
+    loopProtection--;
+    parentPath = parentPath + " canonical_parent";
+    parentObj  = new LiveAPI(null, parentPath);
+  } while( (parentObj.type !== parentType)
+        && (parentObj.id != 0)
+        && loopProtection > 0
+         );
+
+  if(loopProtection == 0 || parentObj.id == 0) {
+    return nothing;
+  } else {
+    return just(parentObj);
   }
 }
 

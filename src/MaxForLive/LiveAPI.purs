@@ -50,8 +50,9 @@ module MaxForLive.LiveAPI (
   ) where
 
 import Prelude
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Effect.Uncurried (EffectFn2, runEffectFn2)
+import Effect.Uncurried (EffectFn2, EffectFn4, runEffectFn2, runEffectFn4)
 import Unsafe.Coerce (unsafeCoerce)
 
 import MaxForLive.Conversions (MaxValue, class ToMax, class FromMax, toMax)
@@ -281,8 +282,23 @@ foreign import getCount :: forall a. EffectFn2 String (LiveAPI a) Int
   take this into account.
 -------------------------------------------------------------------------------}
 
+-- | Look for a (transitive) parent of the given type
+-- |
+-- | Low-level function; see `deviceTrack` for an example use case.
+--
+-- See https://book.purescript.org/chapter10.html#beyond-simple-types for an
+-- explanation of the `Maybe` parameters.
+foreign import parentOfType :: forall r a b.
+   EffectFn4
+     (forall x. x -> Maybe x) -- ^ `Just`
+     (forall x. Maybe x)      -- ^ `Nothing`
+     String                   -- ^ Type of parent we're looking for
+     (Path r a)               -- ^ Starting point
+     (Maybe (LiveAPI b))      -- ^ Use site must establish type of result object
+
 -- | Track this device sits on
-foreign import deviceTrack :: forall r. Path r Device -> Effect (LiveAPI Track)
+deviceTrack :: forall r. Path r Device -> Effect (Maybe (LiveAPI Track))
+deviceTrack = runEffectFn4 parentOfType Just Nothing "Track"
 
 {-------------------------------------------------------------------------------
   Type specializations
