@@ -6,12 +6,23 @@ module MaxForLive.Conversions (
     -- * Conversion from pureScript to Max
   , class ToMax
   , toMax
-    -- * Auxiliary functions
-  , maxError
-  , maxFromJust
+    -- * Enumerations
+  , class SimpleEnum
+  , toSimpleEnum
+  , fromSimpleEnum
+  , genericToSimpleEnum
+  , genericFromSimpleEnum
+  , maxFromEnum
+  , maxToEnum
   ) where
 
 import Prelude
+import Data.Enum.Generic (
+    class GenericBoundedEnum
+  , genericToEnum
+  , genericFromEnum
+  )
+import Data.Generic.Rep (class Generic)
 import Data.Maybe (Maybe(..))
 import Unsafe.Coerce (unsafeCoerce)
 
@@ -76,6 +87,35 @@ instance toMaxString :: ToMax String where
 
 instance toMaxArray :: ToMax a => ToMax (Array a) where
   toMax = unsafeCoerce <<< map toMax
+
+{-------------------------------------------------------------------------------
+  Simple enumerations
+
+  It is often useful to have simple enumerations available for conversion to
+  and from Max.
+-------------------------------------------------------------------------------}
+
+class SimpleEnum a where
+  fromSimpleEnum :: a -> Int
+  toSimpleEnum   :: Int -> a
+
+genericFromSimpleEnum :: forall a rep.
+     Generic a rep
+  => GenericBoundedEnum rep
+  => a -> Int
+genericFromSimpleEnum = genericFromEnum
+
+genericToSimpleEnum :: forall a rep.
+     Generic a rep
+  => GenericBoundedEnum rep
+  => Int -> a
+genericToSimpleEnum = maxFromJust <<< genericToEnum
+
+maxToEnum :: forall a. SimpleEnum a => MaxValue -> a
+maxToEnum = toSimpleEnum <<< fromMax
+
+maxFromEnum :: forall a. SimpleEnum a => a -> MaxValue
+maxFromEnum = toMax <<< fromSimpleEnum
 
 {-------------------------------------------------------------------------------
   Auxiliary
