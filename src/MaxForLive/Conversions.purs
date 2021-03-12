@@ -22,7 +22,9 @@ import Data.Enum.Generic (
   , genericToEnum
   , genericFromEnum
   )
+import Data.Array as Array
 import Data.Generic.Rep (class Generic)
+import Data.List (List)
 import Data.Maybe (Maybe(..))
 import Unsafe.Coerce (unsafeCoerce)
 
@@ -87,6 +89,9 @@ instance toMaxString :: ToMax String where
 
 instance toMaxArray :: ToMax a => ToMax (Array a) where
   toMax = unsafeCoerce <<< map toMax
+
+instance toMaxList :: ToMax a => ToMax (List a) where
+  toMax = toMax <<< Array.fromFoldable
 
 {-------------------------------------------------------------------------------
   Simple enumerations
