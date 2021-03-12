@@ -36,3 +36,8 @@ exports.fromMaxStringImpl = function(x) {
           );
   }
 }
+
+exports.maxError = function(err) {
+   error(err, "\n");
+   return null;
+}

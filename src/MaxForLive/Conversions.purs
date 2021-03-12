@@ -1,12 +1,18 @@
 module MaxForLive.Conversions (
     MaxValue
+    -- * Conversion from Max to PureScript
   , class FromMax
   , fromMax
+    -- * Conversion from pureScript to Max
   , class ToMax
   , toMax
+    -- * Auxiliary functions
+  , maxError
+  , maxFromJust
   ) where
 
 import Prelude
+import Data.Maybe (Maybe(..))
 import Unsafe.Coerce (unsafeCoerce)
 
 {-------------------------------------------------------------------------------
@@ -70,3 +76,14 @@ instance toMaxString :: ToMax String where
 
 instance toMaxArray :: ToMax a => ToMax (Array a) where
   toMax = unsafeCoerce <<< map toMax
+
+{-------------------------------------------------------------------------------
+  Auxiliary
+-------------------------------------------------------------------------------}
+
+foreign import maxError :: forall a. String -> a
+
+-- | Turn partiality into a Max error
+maxFromJust :: forall a. Maybe a -> a
+maxFromJust (Just x) = x
+maxFromJust Nothing  = maxError "maxFromJust"
