@@ -1,6 +1,6 @@
 module MaxForLive.LiveAPI (
     -- | Object types
-    kind LOM
+    LOM
   , Application
   , Clip
   , Device
@@ -13,7 +13,7 @@ module MaxForLive.LiveAPI (
   , class HasView
   , view
     -- | Paths
-  , kind Root
+  , Root
   , Absolute
   , Relative
   , Path -- opaque
@@ -37,7 +37,7 @@ module MaxForLive.LiveAPI (
     -- | Type specializations
   , countControlSurfaces
     -- | Controls
-  , kind Control
+  , Control
   , ButtonMatrix
   , ControlName -- opaque
   , buttonMatrix
@@ -62,7 +62,7 @@ import MaxForLive.Message (Message(..))
   Types of objects
 -------------------------------------------------------------------------------}
 
-foreign import kind LOM
+foreign import data LOM :: Type
 
 -- | Application
 -- |
@@ -129,7 +129,7 @@ instance hasViewClip :: HasView Clip
 -------------------------------------------------------------------------------}
 
 -- | Different kinds of paths
-foreign import kind Root
+foreign import data Root :: Type
 
 -- | Relative path
 -- |
@@ -321,7 +321,7 @@ countControlSurfaces = runEffectFn2 getCount "control_surfaces"
   https://docs.cycling74.com/max8/vignettes/live_object_model
 -------------------------------------------------------------------------------}
 
-foreign import kind Control
+foreign import data Control :: Type
 foreign import data ButtonMatrix :: Control
 
 -- | Control names
