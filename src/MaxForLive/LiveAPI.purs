@@ -244,7 +244,7 @@ instance showId :: Show (Id a) where
 -- | This will turn the ID into a list `["id", id]`, which is the format
 -- | expected in Max messages.
 instance toMaxId :: ToMax (Id a) where
-  toMax (Id i) = toMax $ Message { messageName: "id", messagePayload: i }
+  toMax (Id i) = toMax $ Message { name: "id", payload: i }
 
 -- | Low-level function for use in the `FromMax` instance
 foreign import idFromMax :: forall a. MaxValue -> Id a

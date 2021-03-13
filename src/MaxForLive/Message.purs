@@ -12,15 +12,14 @@ import MaxForLive.Conversions (MaxValue, class ToMax, toMax)
 -------------------------------------------------------------------------------}
 
 data Message a = Message {
-      messageName    :: String
-    , messagePayload :: a
+      name    :: String
+    , payload :: a
     }
 
 foreign import mkMaxMessage :: Fn2 String MaxValue MaxValue
 
 instance toMaxMessage :: ToMax a => ToMax (Message a) where
-  toMax (Message { messageName, messagePayload }) =
-      runFn2 mkMaxMessage messageName (toMax messagePayload)
+  toMax (Message { name, payload }) = runFn2 mkMaxMessage name (toMax payload)
 
 {-------------------------------------------------------------------------------
   Bang
