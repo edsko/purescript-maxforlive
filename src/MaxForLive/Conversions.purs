@@ -77,8 +77,9 @@ instance fromMaxBoolean :: FromMax Boolean where
 instance toMaxMaxValue :: ToMax MaxValue where
   toMax = identity
 
-instance toMaxInt :: ToMax Int where
-  toMax = unsafeCoerce
+instance toMaxInt    :: ToMax Int    where toMax = unsafeCoerce
+instance toMaxNumber :: ToMax Number where toMax = unsafeCoerce
+instance toMaxString :: ToMax String where toMax = unsafeCoerce
 
 instance toMaxBoolean :: ToMax Boolean where
   toMax = toMax <<< conv
@@ -86,9 +87,6 @@ instance toMaxBoolean :: ToMax Boolean where
       conv :: Boolean -> Int
       conv false = 0
       conv true  = 1
-
-instance toMaxString :: ToMax String where
-  toMax = unsafeCoerce
 
 instance toMaxArray :: ToMax a => ToMax (Array a) where
   toMax = unsafeCoerce <<< map toMax
