@@ -1,6 +1,7 @@
 module MaxForLive.Arguments (
     Arguments
   , getArg
+  , getRemainingArgs
   ) where
 
 import Prelude
@@ -25,3 +26,10 @@ foreign import getArgImpl :: Fn2 Arguments Int MaxValue
 -- | Throws an exception if out of range.
 getArg :: forall a. FromMax a => Arguments -> Int -> a
 getArg xs = fromMax <<< runFn2 getArgImpl xs
+
+-- | Get the remaining arguments, starting at `i`.
+foreign import getRemainingArgsImpl :: Fn2 Arguments Int (Array MaxValue)
+
+-- | Get the remaining arguments, starting at `i`.
+getRemainingArgs :: forall a. FromMax a => Arguments -> Int -> (Array a)
+getRemainingArgs xs = map fromMax <<< runFn2 getRemainingArgsImpl xs

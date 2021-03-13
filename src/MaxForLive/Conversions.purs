@@ -45,6 +45,9 @@ class ToMax a where
 
 {-------------------------------------------------------------------------------
   `FromMax` instances
+
+  The lack of an instance for array/list is intentional. See `CollectAll`
+  instead.
 -------------------------------------------------------------------------------}
 
 foreign import fromMaxIntImpl    :: MaxValue -> Int
